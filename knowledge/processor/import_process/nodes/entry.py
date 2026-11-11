@@ -1,7 +1,5 @@
 """
-入口节点
-
-检测文件类型并设置处理标志
+    入口节点
 """
 from pathlib import Path
 
@@ -13,12 +11,8 @@ from processor.import_process.state import ImportGraphState, create_default_stat
 
 
 class EntryNode(BaseNode):
-    """
-    根据输入文件的扩展名设置相应的处理标志，
-    决定后续流程走 PDF 转换分支还是直接处理 MD 分支。
-    """
-
-    name = "entry_node"
+    """检测文件类型并设置处理标志，判断分支"""
+    name: str = "entry_node"
 
     def process(self, state: ImportGraphState) -> ImportGraphState:
         """
@@ -28,11 +22,9 @@ class EntryNode(BaseNode):
         Returns:
             ImportGraphState：该节点处理之后的节点状态
         """
-
         import_file_path = state.get("import_file_path")
         export_file_path = state.get("file_dir")
         # 校验数据
-
         if not import_file_path:
             raise ValidationError(message=f"上传文件的路径为空", node_name=self.name)
         if not export_file_path:
@@ -55,11 +47,11 @@ class EntryNode(BaseNode):
 
 if __name__ == "__main__":
     setup_logging()
-    state = create_default_state(
+    test_state = create_default_state(
         import_file_path=r"G:\coder\git\project\shopkeeper_brain\test\pdf\万用表RS-12的使用.pdf",
         file_dir=r"G:\coder\git\project\shopkeeper_brain\test\temp_dir"
 
     )
     entry_node = EntryNode()
-    test_state = entry_node(state)
-    print(json_dumps(test_state, indent=4, ensure_ascii=False))
+    finally_state = entry_node(test_state)
+    print(json_dumps(finally_state, indent=4, ensure_ascii=False))
