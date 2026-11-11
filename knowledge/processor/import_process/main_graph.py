@@ -76,6 +76,7 @@ def create_import_graph() -> CompiledStateGraph:
     graph.add_edge("document_split_node", "item_name_recognition_node")
     graph.add_edge("item_name_recognition_node", "bge_embedding_node")
     graph.add_edge("bge_embedding_node", "import_milvus_node")
+    graph.add_edge("import_milvus_node", END)
 
     # 4. 编译图
     return graph.compile()
@@ -85,24 +86,15 @@ def create_import_graph() -> CompiledStateGraph:
 kb_import_graph = graph_compiled = create_import_graph()
 
 if __name__ == '__main__':
-    # setup_logging()
     state = create_default_state(
-        # is_pdf_read_enabled=True,
-        # is_md_read_enabled=False,
-        import_file_plugins="E:/gsq/sgg/classstudy/11_尚硅谷AI全能开发技术之项目【掌柜智库】/2.资料/pdf文档/doc/万用表RS-12的使用.pdf",
-        file_dir="E:/temp_dir"
+        import_file_path=r"G:\coder\git\project\shopkeeper_brain\test\pdf\万用表RS-12的使用.pdf",
+        file_dir=r"G:\coder\git\project\shopkeeper_brain\test\temp_dir"
     )
 
-    init_state = create_default_state(**state)
-
     final_state = None
+    for event in kb_import_graph.stream(state, stream_mode="values"):
+        final_state = event
 
-    for event in kb_import_graph.stream(state):
-        for node_name, state in event.items():
-            print(f"节点的名称是：{node_name}")
-            final_state = state
-
-    print(f"最终状态：{final_state}")
+    print("最终状态：")
     print(json.dumps(final_state, indent=4, ensure_ascii=False))
-
-    kb_import_graph.get_graph().print_ascii()
+    # kb_import_graph.get_graph().print_ascii()

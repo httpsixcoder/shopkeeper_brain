@@ -3,7 +3,7 @@
 """
 from pathlib import Path
 
-from modelscope.fileio.format.jsonplus import json_dumps
+import json
 
 from processor.import_process.base import BaseNode, setup_logging
 from processor.import_process.exceptions import ValidationError
@@ -15,6 +15,7 @@ class EntryNode(BaseNode):
     name: str = "entry_node"
 
     def process(self, state: ImportGraphState) -> ImportGraphState:
+        # return {} # 测试main_graph.py
         """
         处理文件类型的检测
         Args:
@@ -38,8 +39,8 @@ class EntryNode(BaseNode):
             state["is_pdf_read_enabled"] = True
             state["pdf_path"] = str(import_file_path_obj)
         else:
-            ValidationError(message=f"传入的文件不符合规定，要求md或者pdf，当前为：{import_file_path_obj.suffix}",
-                            node_name=self.name)
+            raise ValidationError(message=f"传入的文件不符合规定，要求md或者pdf，当前为：{import_file_path_obj.suffix}",
+                                  node_name=self.name)
         state["file_title"] = import_file_path_obj.stem
 
         return state
@@ -53,5 +54,5 @@ if __name__ == "__main__":
 
     )
     entry_node = EntryNode()
-    finally_state = entry_node(test_state)
-    print(json_dumps(finally_state, indent=4, ensure_ascii=False))
+    final_state = entry_node(test_state)
+    print(json.dumps(final_state, indent=4, ensure_ascii=False))

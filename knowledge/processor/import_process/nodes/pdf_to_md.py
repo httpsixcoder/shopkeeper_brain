@@ -5,9 +5,11 @@ import subprocess
 import time
 from pathlib import Path
 
-from processor.import_process.base import BaseNode
+import json
+
+from processor.import_process.base import BaseNode, setup_logging
 from processor.import_process.exceptions import ValidationError, FileProcessingError, PdfConversionError
-from processor.import_process.state import ImportGraphState
+from processor.import_process.state import ImportGraphState, create_default_state
 
 
 class PdfToMdNode(BaseNode):
@@ -94,7 +96,7 @@ class PdfToMdNode(BaseNode):
                 self.logger.info(f"mineru命令执行成功，退出码：{state_code},耗时：{end_time - start_time:.2f}秒")
             return state_code
         except Exception as e:
-            self.logger.error(f"执行 mineru 发生未知异常: {e}")
+            self.logger.exception(f"执行mineru失败,{e}")  # 打印详细错误堆栈， 默认ERROR级别
             return 1
 
     def _get_md_paths(self, pdf_path_obj: Path, file_dir_obj: Path) -> str:
@@ -111,3 +113,14 @@ class PdfToMdNode(BaseNode):
         if not Path(md_path).exists():
             raise FileProcessingError(message=f"mineru解析失败或未生成MD文件，目标路径：{md_path}", node_name=self.name)
         return md_path
+
+
+if __name__ == "__main__":
+    setup_logging()
+    test_state = create_default_state(
+        pdf_path=r"G:\\coder\\git\\project\\shopkeeper_brain\\test\\pdf\\万用表RS-12的使用.pdf",
+        file_dir=r"G:\\coder\\git\\project\\shopkeeper_brain\\test\\temp_dir"
+    )
+    pdf_to_md_node = PdfToMdNode()
+    final_state = pdf_to_md_node(test_state)
+    print(json.dumps(final_state, indent=4, ensure_ascii=False))
