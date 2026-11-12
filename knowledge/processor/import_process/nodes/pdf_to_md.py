@@ -1,5 +1,5 @@
 """
-    入口节点
+    入口节点（可异步，见最后）
 """
 import subprocess
 import time
@@ -124,3 +124,85 @@ if __name__ == "__main__":
     pdf_to_md_node = PdfToMdNode()
     final_state = pdf_to_md_node(test_state)
     print(json.dumps(final_state, indent=4, ensure_ascii=False))
+
+"""
+异步：
+import asyncio
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+# 记得把 process 方法声明为 async def
+async def process(self, state: ImportGraphState) -> ImportGraphState | dict:
+    pdf_path = state.get("pdf_path")
+    file_dir = state.get("file_dir")
+    # 1. 参数校验
+    pdf_path_obj, file_dir_obj = self._validate_state_inputs_path(pdf_path, file_dir)
+    
+    # 2. 异步执行 mineru 命令
+    code = await self._execute_mineru_async(pdf_path_obj, file_dir_obj)
+    if code != 0:
+        raise PdfConversionError(message=f"mineru命令执行失败，状态码：{code}", node_name=self.name)
+        
+    # 3. 获取MD信息
+    md_path = self._get_md_paths(pdf_path_obj, file_dir_obj)
+    state["md_path"] = md_path
+    return state
+
+async def _execute_mineru_async(self, pdf_path_obj: Path, file_dir_obj: Path) -> int:
+    # 异步执行 MinerU，带超时保护与进程清理
+    start_time = time.time()
+    cmd = [
+        "mineru", "-p", str(pdf_path_obj.resolve()), "-o", str(file_dir_obj.resolve()), 
+        "--backend", "pipeline"
+    ]
+    
+    try:
+        # 启动异步子进程
+        process = await asyncio.create_subprocess_exec(
+            *cmd,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT,
+            env={**os.environ, "PYTHONIOENCODING": "utf-8"}
+        )
+        
+        # 异步读取日志并实时打印（防止管道堵塞导致死锁）
+        async def read_stream(stream):
+            while True:
+                line = await stream.readline()
+                if not line:
+                    break
+                print(f"[MinerU] {line.decode('utf-8', errors='replace').rstrip()}")
+                
+        await asyncio.gather(
+            read_stream(process.stdout),
+            process.wait()  # 等待进程结束
+        )
+        
+        state_code = process.returncode
+        end_time = time.time()
+        
+        if state_code != 0:
+            self.logger.error(f"mineru命令执行失败，退出码：{state_code}")
+        else:
+            self.logger.info(f"mineru命令执行成功，耗时：{end_time - start_time:.2f}秒")
+            
+        return state_code
+        
+    except FileNotFoundError:
+        self.logger.exception("找不到 mineru 命令，请检查环境是否激活或安装正确")
+        return 1
+    except Exception as e:
+        self.logger.exception(f"执行 mineru 发生异常: {e}")
+        # 💡 极致保护：如果 Python 这边挂了，强杀遗留的子进程，释放 GPU
+        try:
+            if sys.platform == "win32":
+                subprocess.run(["taskkill", "/F", "/T", "/PID", str(process.pid)], capture_output=True)
+            else:
+                import os
+                os.killpg(os.getpgid(process.pid), 9)
+        except:
+            pass
+        return 1
+"""

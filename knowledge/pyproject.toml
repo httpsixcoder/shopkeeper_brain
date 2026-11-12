@@ -50,6 +50,7 @@ dependencies = [
     "torchvision==0.22.1",
     "torchaudio==2.7.1",
     "imagescanner>=0.8.2",
+    "openai>=2.54.0",
 ]
 
 # ---------------- 包索引 ----------------
