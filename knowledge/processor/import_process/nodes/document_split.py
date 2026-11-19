@@ -352,14 +352,17 @@ if __name__ == '__main__':
 
     document_node = DocumentSplitNode()
     # 构造状态字典
-    file_path = r"G:\coder\git\project\shopkeeper_brain\test\temp_dir\万用表RS-12的使用\auto\万用表RS-12的使用_new.md"
+    # file_path = r"G:\coder\git\project\shopkeeper_brain\test\temp_dir\万用表RS-12的使用\auto\万用表RS-12的使用_new.md"
+    file_path = r"G:\coder\git\project\shopkeeper_brain\test\temp_dir\Aolynk CB304n Cable网桥 用户手册-5W100-整本手册\auto\Aolynk CB304n Cable网桥 用户手册-5W100-整本手册_new.md"
     with open(file_path, "r", encoding="utf-8") as f:
         content = f.read()
 
     state = {
-        "file_title": "万用表的使用",
+        # "file_title": "万用表的使用",
+        "file_title": "Aolynk CB304n Cable网桥 用户手册-5W100-整本手册",
         "md_content": content,
-        "file_dir": r"G:\coder\git\project\shopkeeper_brain\test\temp_dir\万用表RS-12的使用\auto"
+        # "file_dir": r"G:\coder\git\project\shopkeeper_brain\test\temp_dir\万用表RS-12的使用\auto"
+        "file_dir": r"G:\coder\git\project\shopkeeper_brain\test\temp_dir\Aolynk CB304n Cable网桥 用户手册-5W100-整本手册\auto"
     }
 
     final_state = document_node(state)
