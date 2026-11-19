@@ -15,7 +15,7 @@ from openai import OpenAI
 from minio import Minio
 
 from processor.import_process.base import BaseNode, setup_logging
-from processor.import_process.exceptions import StateFieldError, FileProcessingError
+from processor.import_process.exceptions import StateFieldError, FileProcessingError, ImageProcessingError
 from processor.import_process.state import ImportGraphState, create_default_state
 from utils.client.ai_clients import AIClients
 from utils.client.storage_clients import StorageClients
@@ -45,7 +45,6 @@ class MdFileHandler:
         self.node_name = node_name
 
     def read_md(self, state: ImportGraphState) -> tuple[str, Path, Path]:
-
         """
         读取MD文件
         :param
@@ -66,6 +65,21 @@ class MdFileHandler:
             md_content = f.read()
         md_images_path_obj = md_path_obj.parent / "images"
         return md_content, md_path_obj, md_images_path_obj
+
+    def backup(self, md_path_obj: Path, md_content_new: str) -> None:
+        """备份新的MD文件
+        Args:
+            md_path_obj:Path
+            md_content_new:str
+        Returns:None
+        """
+        try:
+            file_path = md_path_obj.with_name(f"{md_path_obj.stem}_new{md_path_obj.suffix}")
+            with open(file_path, "w", encoding="utf-8") as f:
+                f.write(md_content_new)
+        except Exception as e:
+            self.logger.warning(msg=f"备份文件出现错误，异常{e}")
+            raise ImageProcessingError(f"文件写入失败: {e}", node_name="md_img_node")
 
 
 # --------------------------2.图片扫描器--------------------------
@@ -319,7 +333,7 @@ class VLMSummarizer:
                 max_tokens=100,
                 stream=False
             )
-            summary_context = response.choices[0].message.content   # type: ignore <-- 解决警告
+            summary_context = response.choices[0].message.content  # type: ignore <-- 解决警告
             return summary_context
         except Exception as e:
             self.logger.warning(msg=f"调用VLM生成摘要失败，图片名称：{image_info.name}-原因：{e}")
@@ -446,13 +460,15 @@ class MdImgNode(BaseNode):
                                                                 config.get_minio_base_url())
         print(md_content_new)
         # 5.备份旧的MD文档
+        self.md_file_handler.backup(md_path_obj, md_content_new)
         return state
 
 
 if __name__ == "__main__":
     setup_logging()
     test_state = create_default_state(
-        md_path=r"G:\coder\git\project\shopkeeper_brain\test\temp_dir\万用表RS-12的使用\auto\万用表RS-12的使用.md",
+        # md_path=r"G:\coder\git\project\shopkeeper_brain\test\temp_dir\万用表RS-12的使用\auto\万用表RS-12的使用.md",
+        md_path=r"G:\coder\git\project\shopkeeper_brain\test\temp_dir\Aolynk CB304n Cable网桥 用户手册-5W100-整本手册\auto\Aolynk CB304n Cable网桥 用户手册-5W100-整本手册.md",
     )
     md_img_node = MdImgNode()
     final_state = md_img_node(test_state)

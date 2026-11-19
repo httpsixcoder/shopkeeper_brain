@@ -118,7 +118,9 @@ class PdfToMdNode(BaseNode):
 if __name__ == "__main__":
     setup_logging()
     test_state = create_default_state(
-        pdf_path=r"G:\\coder\\git\\project\\shopkeeper_brain\\test\\pdf\\万用表RS-12的使用.pdf",
+        # pdf_path=r"G:\\coder\\git\\project\\shopkeeper_brain\\test\\pdf\\万用表RS-12的使用.pdf",
+        # file_dir=r"G:\\coder\\git\\project\\shopkeeper_brain\\test\\temp_dir"
+        pdf_path=r"G:\coder\git\project\shopkeeper_brain\test\pdf\Aolynk CB304n Cable网桥 用户手册-5W100-整本手册.pdf",
         file_dir=r"G:\\coder\\git\\project\\shopkeeper_brain\\test\\temp_dir"
     )
     pdf_to_md_node = PdfToMdNode()

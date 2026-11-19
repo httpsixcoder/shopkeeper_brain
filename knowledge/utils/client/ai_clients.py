@@ -6,7 +6,7 @@ from openai import OpenAI
 from pymilvus.model.hybrid import BGEM3EmbeddingFunction
 #pip install flagembedding
 from FlagEmbedding import FlagReranker
-from knowledge.utils.client.base import BaseClientManager, logger
+from utils.client.base import BaseClientManager, logger
 import logging
 from typing import Optional
 
