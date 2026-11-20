@@ -13,7 +13,7 @@ class ItemNameSchemaBase:
 
 @dataclass
 class ItemNameSchemaCreate(ItemNameSchemaBase):
-    """专门用于建表的配置类，对应你的 Create"""
+    """建表的配置类"""
 
     def build_schema(self, milvus_client: MilvusClient):
         schema = milvus_client.create_schema()

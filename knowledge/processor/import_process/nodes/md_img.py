@@ -467,8 +467,8 @@ class MdImgNode(BaseNode):
 if __name__ == "__main__":
     setup_logging()
     test_state = create_default_state(
-        # md_path=r"G:\coder\git\project\shopkeeper_brain\test\temp_dir\万用表RS-12的使用\auto\万用表RS-12的使用.md",
-        md_path=r"G:\coder\git\project\shopkeeper_brain\test\temp_dir\Aolynk CB304n Cable网桥 用户手册-5W100-整本手册\auto\Aolynk CB304n Cable网桥 用户手册-5W100-整本手册.md",
+        md_path=r"G:\coder\git\project\shopkeeper_brain\test\temp_dir\万用表RS-12的使用\auto\万用表RS-12的使用.md",
+        # md_path=r"G:\coder\git\project\shopkeeper_brain\test\temp_dir\Aolynk CB304n Cable网桥 用户手册-5W100-整本手册\auto\Aolynk CB304n Cable网桥 用户手册-5W100-整本手册.md",
     )
     md_img_node = MdImgNode()
     final_state = md_img_node(test_state)
